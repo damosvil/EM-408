@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	write(icom, config, sizeof(config));
+	//write(icom, config, sizeof(config));
 
 	char buffer[10001];
 	while (1) {
@@ -77,7 +77,11 @@ int main(int argc, char *argv[])
 		}
 
 		buffer[leido] = 0;
-		printf("%s:%d\r\n", buffer, leido);
+		for (iaux = 0; iaux < leido; iaux++) {
+			printf("0x%02X,", buffer[iaux]); 
+		}
+		printf("\r\n%d\r\n", leido);
+		printf("%s\r\n", buffer);
 	}
 
 	printf("Fin\r\n");
