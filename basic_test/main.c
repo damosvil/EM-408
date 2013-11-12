@@ -7,6 +7,8 @@
 
 int main(int argc, char *argv[])
 {
+	char config[] = { 0xA0, 0xA3, 0x81, 2, 1, 1, 0, 1, 1, 1, 5, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0x25, 0x80, 1, 0x3A, 0xB0, 0xB3 };
+	int speed = B4800;
 	int iaux = 0;
 	struct termios pattr;
 	memset(&pattr, 0, sizeof(pattr));
@@ -30,9 +32,9 @@ int main(int argc, char *argv[])
 	pattr.c_cflag &= ~CSIZE;	// 8 bit datos
 	pattr.c_cflag |= CS8;
 	pattr.c_cflag &= ~CBAUD;	// 9600 baudios
-	pattr.c_cflag |= B9600;
-	cfsetispeed(&pattr, B9600);
-	cfsetospeed(&pattr, B9600);
+	pattr.c_cflag |= speed;
+	cfsetispeed(&pattr, speed);
+	cfsetospeed(&pattr, speed);
 
 	// Se desactivan las opciones de consola
 	pattr.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
@@ -59,15 +61,23 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	char buffer[1001];
+	write(icom, config, sizeof(config));
+
+	char buffer[10001];
 	while (1) {
-		usleep(1000);
-		int leido = read(icom, buffer, 1000);
+		usleep(1000000);
+		int leido = read(icom, buffer, 10000);
 		if (leido < 0) break;
 		if (leido == 0) continue;
 
+		for (iaux = 0; iaux < leido; iaux++) {
+			if (buffer[iaux] == 0xA0 && buffer[iaux + 1] == 0xA2) {
+				printf("\r\n!!!\r\n");
+			}
+		}
+
 		buffer[leido] = 0;
-		printf("%s\r\n", buffer);
+		printf("%s:%d\r\n", buffer, leido);
 	}
 
 	printf("Fin\r\n");
